@@ -97,7 +97,11 @@ while True:
 
 
 # Alternative method with SMTP library to send emails
-# If you want to use this method and send emails, add your email and password into the .env file attached to the project
+# If you want to use this method and send emails follow the steps below:
+# create a .env file in your project directory
+# add your email and password into the .env file by copying the below 2 lines and changing them with real values
+# MY_EMAIL = "___YOUR_EMAIL_HERE____"
+# MY_PASSWORD = "___YOUR_PASSWORD_HERE___"
 
 # while True:
 #     if is_iss_overhead() and is_night_time():
