@@ -10,8 +10,8 @@ load_dotenv()
 
 # TODO! Go to https://www.latlong.net/convert-address-to-lat-long.html and type in your address to get your location
 # Store the latitude and longitude values in the variables below
-MY_LAT = "?"
-MY_LONG = "?"
+MY_LAT = float(51.761460)
+MY_LONG = float(4.621860)
 
 
 
@@ -32,8 +32,16 @@ def is_iss_overhead():
     # <your code here>
 
     # TODO! Parse the response object and store latitude and longitude information in variables below
-    iss_latitude = "<your code here>"
-    iss_longitude = "<your code here>"
+    try:
+        response = requests.get("http://api.open-notify.org/iss-now.json")
+        response.raise_for_status()
+    except requests.exceptions.TooManyRedirects as error:
+        print(error)
+
+    iss_latitude = response.json()['iss_position']['latitude'] 
+    iss_longitude = response.json()['iss_position']['longitude']
+
+
 
     #Return True if user's position is within +5 or -5 degrees of the ISS position.
     if (MY_LAT-5 <= float(iss_latitude) <= MY_LAT+5) and (MY_LONG-5 <= float(iss_longitude) <= MY_LONG+5):
@@ -53,8 +61,8 @@ def is_night_time():
     # Populate the parameters object below by adding the required parameters
     # IMPORTANT! Make sure to keep the "formatted" parameter as 0 to get the time value in ISO format. 
     parameters = {
-        "?" : "?",
-        "?": "?",
+        "lat" : MY_LAT ,
+        "lng":MY_LONG ,
         "formatted": 0,
     }
 
@@ -66,14 +74,18 @@ def is_night_time():
     
 
     # TODO! Check for any errors by using the raise_for_status method
-    # <your code here>
+    try:
+            response = requests.get(f"https://api.sunrise-sunset.org/json",params=parameters)
+            response.raise_for_status()
+    except requests.exceptions.TooManyRedirects as error:
+            print(error)
 
     # TODO! Store the JSON representation of the response object in a variable
-    # <your code here>
+    data = response.json()
 
     # TODO! Parse the response object and store sunrise and sunset information in variables below
-    sunrise = "<your code here>"
-    sunset = "<your code here>"
+    sunrise = data['results']['sunrise']
+    sunset = data['results']['sunset']
 
     # Get the current hour
     time_now = datetime.now().hour
