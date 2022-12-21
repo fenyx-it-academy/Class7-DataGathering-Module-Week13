@@ -4,16 +4,12 @@ import smtplib
 import time
 import requests
 from dotenv import load_dotenv
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 load_dotenv()
-
-
-# TODO! Go to https://www.latlong.net/convert-address-to-lat-long.html and type in your address to get your location
-# Store the latitude and longitude values in the variables below
-MY_LAT = "?"
-MY_LONG = "?"
-
-
+MY_LAT = 51.450810
+MY_LONG = 5.471840
 
 def is_iss_overhead():
     """
@@ -21,19 +17,17 @@ def is_iss_overhead():
     Returns:
         bool: Returns True if user's position is within +/-5 degrees of ISS's location, otherwise returns False.
     """
-    
-    # TODO! Make an API call (a GET request) to "http://api.open-notify.org/iss-now.json"
-    # <your code here>
-    
-    # TODO! Check for any errors by using the raise_for_status method
-    # <your code here>
+    try:
+        response = requests.get("http://api.open-notify.org/iss-now.json")
+        responseJSON = response.json()
+        print(responseJSON)
+        time.sleep(1)
+    except requests.exceptions.HTTPError as httpError:
+        response.raise_for_status()
+        raise SystemExit(httpError)
 
-    # TODO! Store the JSON representation of the response object in a variable
-    # <your code here>
-
-    # TODO! Parse the response object and store latitude and longitude information in variables below
-    iss_latitude = "<your code here>"
-    iss_longitude = "<your code here>"
+    iss_latitude =  responseJSON["iss_position"]["latitude"]
+    iss_longitude =  responseJSON["iss_position"]["longitude"]
 
     #Return True if user's position is within +5 or -5 degrees of the ISS position.
     if (MY_LAT-5 <= float(iss_latitude) <= MY_LAT+5) and (MY_LONG-5 <= float(iss_longitude) <= MY_LONG+5):
@@ -41,76 +35,74 @@ def is_iss_overhead():
     
     return False
 
-
 def is_night_time():
     """
         Sends a GET request to get the sunrise and sunset time of a location.
     Returns:
         bool: True if it is currently night time, False if day time.
-    """
-
-    # TODO! Check out the API documentation at https://sunrise-sunset.org/api
-    # Populate the parameters object below by adding the required parameters
-    # IMPORTANT! Make sure to keep the "formatted" parameter as 0 to get the time value in ISO format. 
-    parameters = {
-        "?" : "?",
-        "?": "?",
-        "formatted": 0,
-    }
-
-    # TODO! Make an API call (a GET request) to "https://api.sunrise-sunset.org/json" along with the parameters object above.
-    # Check out documentation of requests library to learn how to add parameters as a separate object in a GET request.
-    # Hint: The secret info is somewhere in this page 🧐 -->  https://requests.readthedocs.io/en/latest/user/quickstart/
-    # <your code here>
-
-    
-
-    # TODO! Check for any errors by using the raise_for_status method
-    # <your code here>
-
-    # TODO! Store the JSON representation of the response object in a variable
-    # <your code here>
-
-    # TODO! Parse the response object and store sunrise and sunset information in variables below
-    sunrise = "<your code here>"
-    sunset = "<your code here>"
-
+    """ 
+    #  the "formatted" parameter as 0 to get the time value in ISO format. 
+    parameters = dict.fromkeys(["lat", "lng", "formatted"])
+    parameters["lat"] = MY_LAT 
+    parameters["lng"] = MY_LONG 
+    parameters["formatted"] = 0 
+    try:
+        sunriseapi_response= requests.get('https://api.sunrise-sunset.org/json', params=parameters)
+        sunriseapi_responseJSON = sunriseapi_response.json()
+        print(sunriseapi_responseJSON)
+        time.sleep(1)
+    except requests.exceptions.HTTPError as httpError:
+        sunriseapi_responseJSON.raise_for_status()
+        raise SystemExit(httpError)
+    sunrise =  sunriseapi_responseJSON["results"]["sunrise"]
+    sunset =  sunriseapi_responseJSON["results"]["sunset"]
     # Get the current hour
     time_now = datetime.now().hour
-
+ 
     # Return True if it is night time
     if time_now >= int(sunset.split("T")[1].split(":")[0]) or time_now <= int(sunrise.split("T")[1].split(":")[0]):
         return True
     
     return False
+ 
+# # Main app logic:
+# # If the ISS is close to your current position and it is currently night time, notify the user
 
+##simple method using the CMD
 
-# Main app logic:
-# If the ISS is close to your current position and it is currently night time, notify the user
-while True:
-    if is_iss_overhead() and is_night_time():
-        print("Look Up👆\n\nThe ISS is above you in the sky.")
-    else:    
-        print("Unfortunately the ISS is not visible at this time, checking again in 60 seconds...")
-    time.sleep(60)
+# while True:
+#     if is_iss_overhead() and is_night_time():
+#         print("Look Up👆\n\nThe ISS is above you in the sky.")
+#     else:    
+#         print("Unfortunately the ISS is not visible at this time, checking again in 60 seconds...")
+#     time.sleep(1)
 
 
 
 # Alternative method with SMTP library to send emails
-# If you want to use this method and send emails follow the steps below:
-# create a .env file in your project directory
-# add your email and password into the .env file by copying the below 2 lines and changing them with real values
-# MY_EMAIL = "___YOUR_EMAIL_HERE____"
-# MY_PASSWORD = "___YOUR_PASSWORD_HERE___"
-
-# while True:
-#     if is_iss_overhead() and is_night_time():
-#         connection = smtplib.SMTP("__YOUR_SMTP_ADDRESS_HERE___") # look for the correct smtp address for your email service (gmail, outlook etc.)
-#         connection.starttls()
-#         connection.login(os.getenv("MY_EMAIL"), os.getenv("MY_PASSWORD"))
-#         connection.sendmail(
-#             from_addr=os.getenv("MY_EMAIL"),
-#             to_addrs=os.getenv("MY_EMAIL"),
-#             msg="Subject:Look Up👆\n\nThe ISS is above you in the sky."
-#         )
-#     time.sleep(60)
+def send_email( mail_content):
+    
+    sender_address = os.getenv("sender_address")
+    sender_pass =  os.getenv("sender_pass")
+    receiver_address =  os.getenv("receiver_address")
+    #Setup the MIME
+    message = MIMEMultipart()
+    message['From'] = sender_address
+    message['To'] = receiver_address
+    message['Subject'] = 'ISS is above your head!'  
+    message.attach(MIMEText(mail_content, 'plain'))
+    #Create SMTP session for sending the mail
+    session = smtplib.SMTP('smtp.gmail.com', 587) #use gmail with port
+    session.starttls() #enable security
+    session.login(sender_address, sender_pass) #login with mail_id and password
+    text = message.as_string()
+    session.sendmail(sender_address, receiver_address, text)
+    session.quit()
+    print('Mail Sent')
+    
+while True:
+    if is_iss_overhead() and is_night_time():
+        send_email("Look Up👆\n\nThe ISS is above you in the sky.")  
+    else:
+        print("Unfortunately the ISS is not visible at this time, checking again in 60 seconds...")       
+    time.sleep(60)
