@@ -10,8 +10,8 @@ load_dotenv()
 
 # TODO! Go to https://www.latlong.net/convert-address-to-lat-long.html and type in your address to get your location
 # Store the latitude and longitude values in the variables below
-MY_LAT = "52.391100"
-MY_LONG = "5.250610"
+MY_LAT = 52.391100
+MY_LONG = 5.250610
 
 
 
@@ -54,17 +54,18 @@ def is_night_time():
     # TODO! Check out the API documentation at https://sunrise-sunset.org/api
     # Populate the parameters object below by adding the required parameters
     # IMPORTANT! Make sure to keep the "formatted" parameter as 0 to get the time value in ISO format. 
+
     parameters = {
-        "lat" : "?",
-        "lng": "?",
+        "sunrise" : "7:25:23 AM",
+        "sunset": "5:07:06 PM",
         "formatted": 0,
     }
 
     # TODO! Make an API call (a GET request) to "https://api.sunrise-sunset.org/json" along with the parameters object above.
     # Check out documentation of requests library to learn how to add parameters as a separate object in a GET request.
     # Hint: The secret info is somewhere in this page 🧐 -->  https://requests.readthedocs.io/en/latest/user/quickstart/
-    res = requests.get(url="https://api.sunrise-sunset.org/json")
-    res.status_code
+    res = requests.get(url="https://api.sunrise-sunset.org/json", params= parameters)
+    
 
     
 
@@ -73,14 +74,11 @@ def is_night_time():
     
 
     # TODO! Store the JSON representation of the response object in a variable
-    result = { 
-        "sunrise":"5:52:44 AM",
-        "sunset":"6:02:22 PM"
-    }
+    representtion = res.json()
 
     # TODO! Parse the response object and store sunrise and sunset information in variables below
-    sunrise = "<your code here>"
-    sunset = "<your code here>"
+    sunrise = representtion['sunrise']
+    sunset = representtion['sunset']
 
     # Get the current hour
     time_now = datetime.now().hour
