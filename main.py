@@ -56,9 +56,9 @@ def is_night_time():
     # IMPORTANT! Make sure to keep the "formatted" parameter as 0 to get the time value in ISO format. 
 
     parameters = {
-        "sunrise" : "7:25:23 AM",
-        "sunset": "5:07:06 PM",
-        "formatted": 0,
+        "lat" : 52.391100,
+        "lng": 5.250610,
+        "formatted": 0
     }
 
     # TODO! Make an API call (a GET request) to "https://api.sunrise-sunset.org/json" along with the parameters object above.
@@ -77,8 +77,8 @@ def is_night_time():
     representtion = res.json()
 
     # TODO! Parse the response object and store sunrise and sunset information in variables below
-    sunrise = representtion['sunrise']
-    sunset = representtion['sunset']
+    sunrise = representtion['results']['sunrise']
+    sunset = representtion['results']['sunset']
 
     # Get the current hour
     time_now = datetime.now().hour
