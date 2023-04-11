@@ -11,8 +11,8 @@ load_dotenv()
 
 # TODO! Go to https://www.latlong.net/convert-address-to-lat-long.html and type in your address to get your location
 # Store the latitude and longitude values in the variables below
-MY_LAT = 51.571915
-MY_LONG = 4.768323
+MY_LAT = 52.370216
+MY_LONG = 4.895168
 
 
 
