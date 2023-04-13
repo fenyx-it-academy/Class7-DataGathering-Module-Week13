@@ -10,8 +10,8 @@ load_dotenv()
 
 # TODO! Go to https://www.latlong.net/convert-address-to-lat-long.html and type in your address to get your location
 # Store the latitude and longitude values in the variables below
-MY_LAT = "?"
-MY_LONG = "?"
+MY_LAT = 52.373169
+MY_LONG = 4.890660
 
 
 
@@ -24,19 +24,26 @@ def is_iss_overhead():
     
     # TODO! Make an API call (a GET request) to "http://api.open-notify.org/iss-now.json"
     # <your code here>
+    response =  requests.get("http://api.open-notify.org/iss-now.json")
     
     # TODO! Check for any errors by using the raise_for_status method
     # <your code here>
+    try:
+        response.raise_for_status()
+    except Exception as e:
+        print(e)
+        
 
     # TODO! Store the JSON representation of the response object in a variable
     # <your code here>
+    response = response.json()
 
     # TODO! Parse the response object and store latitude and longitude information in variables below
-    iss_latitude = "<your code here>"
-    iss_longitude = "<your code here>"
+    iss_latitude = response["iss_position"]["latitude"]
+    iss_longitude = response["iss_position"]["longitude"]
 
     #Return True if user's position is within +5 or -5 degrees of the ISS position.
-    if (MY_LAT-5 <= float(iss_latitude) <= MY_LAT+5) and (MY_LONG-5 <= float(iss_longitude) <= MY_LONG+5):
+    if (float(MY_LAT)-5 <= float(iss_latitude) <= float(MY_LAT)+5) and (float(MY_LONG)-5 <= float(iss_longitude) <= float(MY_LONG)+5):
         return True
     
     return False
@@ -53,8 +60,8 @@ def is_night_time():
     # Populate the parameters object below by adding the required parameters
     # IMPORTANT! Make sure to keep the "formatted" parameter as 0 to get the time value in ISO format. 
     parameters = {
-        "?" : "?",
-        "?": "?",
+        "lat" : MY_LAT,
+        "lng": MY_LONG,
         "formatted": 0,
     }
 
@@ -62,18 +69,26 @@ def is_night_time():
     # Check out documentation of requests library to learn how to add parameters as a separate object in a GET request.
     # Hint: The secret info is somewhere in this page 🧐 -->  https://requests.readthedocs.io/en/latest/user/quickstart/
     # <your code here>
+    
+    response = requests.get("https://api.sunrise-sunset.org/json", params= parameters)
 
     
 
     # TODO! Check for any errors by using the raise_for_status method
     # <your code here>
+    
+    try:
+        response.raise_for_status()
+    except Exception as e:
+        print(e)
 
     # TODO! Store the JSON representation of the response object in a variable
     # <your code here>
+    response = response.json()
 
     # TODO! Parse the response object and store sunrise and sunset information in variables below
-    sunrise = "<your code here>"
-    sunset = "<your code here>"
+    sunrise = response["results"]["sunrise"]
+    sunset = response["results"]["sunset"]
 
     # Get the current hour
     time_now = datetime.now().hour
