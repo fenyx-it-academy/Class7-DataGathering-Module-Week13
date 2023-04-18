@@ -7,12 +7,23 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# response = requests.get(
+#     "https://api.sunrise-sunset.org/json")
+
+# print(response.status_code)
+
+# print(response.json())
+# iss_position = response.json()['iss_position']
+# longtitude = iss_position.get('longitude')
+# latitude = iss_position.get('latitude')
+# print(iss_position)
+# print(longtitude)
+
 
 # TODO! Go to https://www.latlong.net/convert-address-to-lat-long.html and type in your address to get your location
 # Store the latitude and longitude values in the variables below
-MY_LAT = "?"
-MY_LONG = "?"
-
+MY_LAT = 52.307080
+MY_LONG = 4.949530
 
 
 def is_iss_overhead():
@@ -21,24 +32,30 @@ def is_iss_overhead():
     Returns:
         bool: Returns True if user's position is within +/-5 degrees of ISS's location, otherwise returns False.
     """
-    
+
     # TODO! Make an API call (a GET request) to "http://api.open-notify.org/iss-now.json"
     # <your code here>
-    
+    response = requests.get("http://api.open-notify.org/iss-now.json")
+
     # TODO! Check for any errors by using the raise_for_status method
     # <your code here>
+    if response.status_code != 200:
+        raise requests.exceptions.HTTPError(
+            status_code=404, detail="Error, check and try again")
 
     # TODO! Store the JSON representation of the response object in a variable
     # <your code here>
+    response_representation = response.json()
 
     # TODO! Parse the response object and store latitude and longitude information in variables below
-    iss_latitude = "<your code here>"
-    iss_longitude = "<your code here>"
+    iss_location = response_representation['iss_position']
+    iss_latitude = iss_location.get('latitude')
+    iss_longitude = iss_location.get('longitude')
 
-    #Return True if user's position is within +5 or -5 degrees of the ISS position.
+    # Return True if user's position is within +5 or -5 degrees of the ISS position.
     if (MY_LAT-5 <= float(iss_latitude) <= MY_LAT+5) and (MY_LONG-5 <= float(iss_longitude) <= MY_LONG+5):
         return True
-    
+
     return False
 
 
@@ -51,10 +68,10 @@ def is_night_time():
 
     # TODO! Check out the API documentation at https://sunrise-sunset.org/api
     # Populate the parameters object below by adding the required parameters
-    # IMPORTANT! Make sure to keep the "formatted" parameter as 0 to get the time value in ISO format. 
+    # IMPORTANT! Make sure to keep the "formatted" parameter as 0 to get the time value in ISO format.
     parameters = {
-        "?" : "?",
-        "?": "?",
+        "sunrise": "6:27:40 AM",
+        "sunset": "8:37:49 PM",
         "formatted": 0,
     }
 
@@ -62,26 +79,27 @@ def is_night_time():
     # Check out documentation of requests library to learn how to add parameters as a separate object in a GET request.
     # Hint: The secret info is somewhere in this page 🧐 -->  https://requests.readthedocs.io/en/latest/user/quickstart/
     # <your code here>
-
-    
+    response_2 = requests.get("https://api.sunrise-sunset.org/json")
 
     # TODO! Check for any errors by using the raise_for_status method
-    # <your code here>
-
+    if response_2.status_code != 200:
+        raise requests.exceptions.HTTPError(
+            status_code=404, detail="Error check and try again")
     # TODO! Store the JSON representation of the response object in a variable
     # <your code here>
+    response_2_representation = response_2.json()
 
     # TODO! Parse the response object and store sunrise and sunset information in variables below
-    sunrise = "<your code here>"
-    sunset = "<your code here>"
-
+    results = response_2_representation['results']
+    sunrise = results.get('sunrise')
+    sunset = results.get('sunset')
     # Get the current hour
     time_now = datetime.now().hour
 
     # Return True if it is night time
     if time_now >= int(sunset.split("T")[1].split(":")[0]) or time_now <= int(sunrise.split("T")[1].split(":")[0]):
         return True
-    
+
     return False
 
 
@@ -90,10 +108,9 @@ def is_night_time():
 while True:
     if is_iss_overhead() and is_night_time():
         print("Look Up👆\n\nThe ISS is above you in the sky.")
-    else:    
+    else:
         print("Unfortunately the ISS is not visible at this time, checking again in 60 seconds...")
     time.sleep(60)
-
 
 
 # Alternative method with SMTP library to send emails
